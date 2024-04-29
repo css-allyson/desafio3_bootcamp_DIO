@@ -12,17 +12,42 @@ class Historico:
 
 
 class Conta:
-    def __init__(self, saldo:float, numero:int, agencia:str, cliente:Cliente, historico:Historico):
-        self._saldo = saldo
+    def __init__(self, numero:int, cliente:Cliente, historico:Historico):
+        self._saldo = 0
         self._numero = numero
-        self._agencia = agencia
+        self._agencia = "0001"
         self._cliente = cliente
         self._historico = historico
+
+    @property
     def saldo(self):
         return self._saldo
-    def nova_conta(self,cliente:Cliente,numero:int):
-        self._
-    pass
+    @classmethod
+    def nova_conta(cls,cliente:Cliente,numero:int):
+        return cls(numero, cliente)
+    
+    def sacar(self,valor:float):
+        saldo = self._saldo
+        valor_indisponível = valor>self._limite
+        if valor_indisponível:
+            print("A conta não tem saldo suficiente para realizar o saque no valor desejado")
+        elif valor > 0:
+            self._saldo -=valor
+            print("saque realizado com sucesso")
+            return True
+        else:
+            print("Valor informado não é válido")
+
+        return False
+    def depositar(self,valor:float):
+        if valor > 0:
+            self._saldo+=valor
+            print("Depósito realizado com sucesso")
+            return True
+        else:
+            print("Valor informado não é válido")
+            return False
+
 class Cliente:
     def __init__(self, endereco:str):
         self._endereco = endereco
@@ -31,16 +56,35 @@ class Cliente:
         transacao.registrar(conta)
     def adicionar_conta(self,conta):
         self._contas.append(conta)
+
+
+
 class ContaCorrente(Conta):
-    def __init__(self):
-        pass
-    pass
+    def __init__(self, numero:int, cliente:Cliente, limite:float=500, limite_saques:int=3):
+        super().__init__(numero,cliente)
+        self._limite = limite
+        self._limite_saques=limite_saques
+    def sacar(self,valor:float):
+        valor_indisponível = valor>self._limite
+        superou_saques = len(self._historico._saques) >= self._limite_saques
+
+        if valor_indisponível:
+            print("A conta não tem saldo suficiente para realizar o saque no valor desejado")
+
+        elif superou_saques:
+            print("Número de saques diários excevido")
+
+        else:
+            return super().sacar(valor)
+
+
 
 class Transacao(ABC):
     @abstractmethod
     def registrar(self, conta:Conta):
         pass
-    pass
+
+
 
 class Deposito(Transacao):
     def __init__(self,valor):
